@@ -5,7 +5,10 @@
 --4. BACKUP 'TEMP DB'
 --5. REMOVE 'TEMP DB'S .mdf & .ldf files (JUST RESTORED TEMP DB). 
 --6. AS RESULT WE HAVE .bak FILE WITHOUT UNNECESSARY DATA: LOGS, MEASURED VALUES AND ETC.
-
+-- Смысл в том, чтобы не бекапировать данные счетчиков (архивы, текущие показания и прочее), 
+-- а сохранять только структуру конфигурации (дома, точки учета, завномера, камменты, настройки).
+-- Это позволяет существенно снизить объем бекапа телеметрии.
+-- Протестировано в АСКУЭ ЛЕРС Учет, Энергия
 --CREATED BY MATYUSHKIN ROMAN
 
 --https://stackoverflow.com/questions/5131491/enable-xp-cmdshell-sql-server
