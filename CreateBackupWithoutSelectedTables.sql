@@ -1,4 +1,4 @@
-﻿--THIS SCRIPT CREATES BACKUP WITHOUT SELECTED TABLES:
+--THIS SCRIPT CREATES BACKUP WITHOUT SELECTED TABLES:
 --1. BACKUP THE 'SOURCE DB'
 --2. RESTORE JUST BACKUPED DB TO 'TEMP DB'
 --3. REMOVE ALL ROWS FROM SELECTED TABLES IN 'TEMP DB'
@@ -25,11 +25,13 @@
 
 -------------------DECLARATIONS
 DECLARE @backup_folder VARCHAR(128)
+DECLARE @temp_folder VARCHAR(128)
 DECLARE @db_source VARCHAR(128)
 DECLARE @db_source_filename VARCHAR(128)
 DECLARE @db_source_log_filename VARCHAR(128)
 DECLARE @db_target VARCHAR(128)
 DECLARE @db_target_full_path VARCHAR(128)
+DECLARE @db_target_backup_path VARCHAR(128)
 DECLARE @db_target_backup_name VARCHAR(128)
 DECLARE @db_target_mdf_path VARCHAR(128)
 DECLARE @db_target_log_path VARCHAR(128)
@@ -42,16 +44,18 @@ DECLARE @db_source_id int
 
 
 -----------------------------MAIN VARIABLES
-SET @backup_folder = N'C:\temp\'
+SET @temp_folder = N'C:\temp\'
+SET @backup_folder = N'C:\backups\'
 SET @db_source = 'lers' -- CASE INSENSITIVE DATABASE NAME
 
 
 
 -----------------------------DERIVATIVES VARIABLES
 SET @db_target = @db_source + '_only_configuration'
-SET @db_target_full_path = @backup_folder + @db_target + '.bak'
-SET @db_target_mdf_path = @backup_folder + @db_target + '.mdf'
-SET @db_target_log_path = @backup_folder + @db_target + '_log.ldf'
+SET @db_target_full_path = @temp_folder + @db_target + '.bak'
+SET @db_target_backup_path = @backup_folder + @db_target + '.bak'
+SET @db_target_mdf_path = @temp_folder + @db_target + '.mdf'
+SET @db_target_log_path = @temp_folder + @db_target + '_log.ldf'
 SET @db_target_backup_name = @db_source + '-Full Database Backup'
 SET @db_target_configuration_only_backup_name = @db_source + '_only_configuration-Full Database Backup'
 
@@ -150,7 +154,7 @@ end
 close my_cursor
 deallocate my_cursor
 
-BACKUP DATABASE @db_target TO  DISK = @db_target_full_path WITH NOFORMAT, INIT,  NAME = @db_target_configuration_only_backup_name, SKIP, NOREWIND, NOUNLOAD, COMPRESSION,  STATS = 10
+BACKUP DATABASE @db_target TO  DISK = @db_target_backup_path WITH NOFORMAT, INIT,  NAME = @db_target_configuration_only_backup_name, SKIP, NOREWIND, NOUNLOAD, NO_COMPRESSION,  STATS = 10
 
 EXEC msdb.dbo.sp_delete_database_backuphistory @database_name = @db_target
 
