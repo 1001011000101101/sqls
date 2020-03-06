@@ -5,10 +5,7 @@
 --4. BACKUP 'TEMP DB'
 --5. REMOVE 'TEMP DB'S .mdf & .ldf files (JUST RESTORED TEMP DB). 
 --6. AS RESULT WE HAVE .bak FILE WITHOUT UNNECESSARY DATA: LOGS, MEASURED VALUES AND ETC.
--- Смысл в том, чтобы не бекапировать данные счетчиков (архивы, текущие показания и прочее), 
--- а сохранять только структуру конфигурации (дома, точки учета, завномера, камменты, настройки).
--- Это позволяет существенно снизить объем бекапа телеметрии.
--- Протестировано в АСКУЭ ЛЕРС Учет, Энергия
+
 --CREATED BY MATYUSHKIN ROMAN
 
 --https://stackoverflow.com/questions/5131491/enable-xp-cmdshell-sql-server
@@ -48,8 +45,8 @@ DECLARE @db_source_id int
 
 -----------------------------MAIN VARIABLES
 SET @temp_folder = N'C:\temp\'
-SET @backup_folder = N'C:\backups\'
-SET @db_source = 'lers' -- CASE INSENSITIVE DATABASE NAME
+SET @backup_folder = N'C:\ENERGY\EnergyDbBackup(193.107.236.197)\'
+SET @db_source = 'energy' -- CASE INSENSITIVE DATABASE NAME
 
 
 
@@ -82,7 +79,7 @@ CREATE TABLE #temp_table ([Name] [varchar](128) NOT NULL)
 
 
 
-BACKUP DATABASE @db_source TO  DISK = @db_target_full_path WITH NOFORMAT, INIT,  NAME = @db_target_backup_name, SKIP, NOREWIND, NOUNLOAD, NO_COMPRESSION,  STATS = 10
+BACKUP DATABASE @db_source TO  DISK = @db_target_full_path WITH NOFORMAT, INIT,  NAME = @db_target_backup_name, SKIP, NOREWIND, NOUNLOAD, COMPRESSION,  STATS = 10
 
 USE [master]
 RESTORE DATABASE @db_target FROM  DISK = @db_target_full_path WITH  FILE = 1,  MOVE @db_source_filename TO @db_target_mdf_path,  MOVE @db_source_log_filename TO @db_target_log_path,  NOUNLOAD,  REPLACE,  STATS = 5
@@ -134,8 +131,6 @@ if (@tableName IN (
   ,'MessageLog'
   ,'DevicesTraffic'
   ,'MeasuresLong'
- ,'MeasureID'
-  ,'ChannelsParams'
   ,'OperatorsSessionLog'
   ,'DevicesState'
  ,'Table_6_NewVersion'
@@ -145,10 +140,12 @@ if (@tableName IN (
 BEGIN
 
 SET @table = @db_target + '.dbo.' + @tableName
-SET @cmd = 'DELETE FROM ' + @table
+SET @cmd = 'TRUNCATE TABLE ' + @table
 EXEC sp_sqlexec @cmd
 
 END;
+
+
 
 
 
@@ -156,6 +153,10 @@ FETCH NEXT FROM my_cursor INTO @tableName
 end
 close my_cursor
 deallocate my_cursor
+
+
+DBCC SHRINKDATABASE(@db_target);
+
 
 BACKUP DATABASE @db_target TO  DISK = @db_target_backup_path WITH NOFORMAT, INIT,  NAME = @db_target_configuration_only_backup_name, SKIP, NOREWIND, NOUNLOAD, NO_COMPRESSION,  STATS = 10
 
