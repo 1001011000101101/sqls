@@ -45,8 +45,8 @@ DECLARE @db_source_id int
 
 -----------------------------MAIN VARIABLES
 SET @temp_folder = N'C:\temp\'
-SET @backup_folder = N'C:\ENERGY\EnergyDbBackup(193.107.236.197)\'
-SET @db_source = 'energy' -- CASE INSENSITIVE DATABASE NAME
+SET @backup_folder = N'C:\backups\'
+SET @db_source = 'lers' -- CASE INSENSITIVE DATABASE NAME
 
 
 
@@ -79,7 +79,7 @@ CREATE TABLE #temp_table ([Name] [varchar](128) NOT NULL)
 
 
 
-BACKUP DATABASE @db_source TO  DISK = @db_target_full_path WITH NOFORMAT, INIT,  NAME = @db_target_backup_name, SKIP, NOREWIND, NOUNLOAD, COMPRESSION,  STATS = 10
+BACKUP DATABASE @db_source TO  DISK = @db_target_full_path WITH FORMAT, INIT,  NAME = @db_target_backup_name, SKIP, NOREWIND, NOUNLOAD, COMPRESSION,  STATS = 10
 
 USE [master]
 RESTORE DATABASE @db_target FROM  DISK = @db_target_full_path WITH  FILE = 1,  MOVE @db_source_filename TO @db_target_mdf_path,  MOVE @db_source_log_filename TO @db_target_log_path,  NOUNLOAD,  REPLACE,  STATS = 5
@@ -109,7 +109,6 @@ if (@tableName IN (
   ,'AccountLog'
  ,'ElectricConsumptionHour'
   ,'ElectricPowerQuality'
-  ,'Notification'
   ,'ContingencyLog'
   ,'WaterConsumptionMonth'
   ,'DataStatus'
@@ -158,7 +157,7 @@ deallocate my_cursor
 DBCC SHRINKDATABASE(@db_target);
 
 
-BACKUP DATABASE @db_target TO  DISK = @db_target_backup_path WITH NOFORMAT, INIT,  NAME = @db_target_configuration_only_backup_name, SKIP, NOREWIND, NOUNLOAD, NO_COMPRESSION,  STATS = 10
+BACKUP DATABASE @db_target TO  DISK = @db_target_backup_path WITH FORMAT, INIT,  NAME = @db_target_configuration_only_backup_name, SKIP, NOREWIND, NOUNLOAD, COMPRESSION,  STATS = 10
 
 EXEC msdb.dbo.sp_delete_database_backuphistory @database_name = @db_target
 
